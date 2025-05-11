@@ -2,7 +2,7 @@
      name: huluxia_signin
      on:
        schedule:    # 定时触发
-         - cron: '0 4 * * *'  # 24点
+         - cron: '0 4 * * *'  # 12点
        workflow_dispatch:  # 支持手动触发
      jobs:
        build:
