@@ -227,7 +227,7 @@ class HuluxiaSignin:
         notifier_type = os.getenv("NOTIFIER_TYPE")
         print("通知类型：", notifier_type)
     
-        all_messages = []  # 用于聚合所有消息
+        all_messages = [initial_msg]  # 用于聚合所有消息
         total_exp = 0  # 记录总共获取的经验值
     
         # 循环签到每个版块
@@ -279,9 +279,6 @@ class HuluxiaSignin:
         all_messages.append(final_msg)  # 聚合消息
         logger.info(final_msg)
     
-        # 如果是微信通知，发送聚合后的所有消息
-        if notifier_type == "wechat" and all_messages:
-            self.notifier.send("\n\n".join(all_messages))
-        # 如果是邮箱通知，发送聚合后的所有消息
-        elif notifier_type == "email" and all_messages:
+        # 如果有消息需要通知，将聚合后的消息一次性发送
+        if all_messages and notifier_type in ["wechat", "email"]:
             self.notifier.send("\n\n".join(all_messages))
