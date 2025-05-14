@@ -104,7 +104,8 @@
 
 本项目仅供学习和交流使用，请勿用于任何商业用途。使用者需自行承担因使用本项目而产生的任何风险和责任。
 
-在此感谢ilhmtfmlt2/huluxia_thirdfloor_signin项目
+### api参考(https://github.com/ilhmtfmlt2/huluxia_thirdfloor_signin.git).
+
 
 [![Star History Chart](https://api.star-history.com/svg?repos=BoltLv4215/huluxia_thirdfloor_signin&type=Date)](https://star-history.com/#BoltLv4215/huluxia_thirdfloor_signin&Date)<br/>
 
