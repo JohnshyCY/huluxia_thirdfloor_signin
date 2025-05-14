@@ -75,7 +75,7 @@
    - 配置`WECHAT_ROBOT_URL`环境变量，值为企业微信群机器人的Webhook地址，具体获取方法请参考[企业微信群机器人文档](https://open.work.weixin.qq.com/help2/pc/14931?person_id=1)。
    - 该推送方式需要在Github Secrets中设置`WECHAT_ROBOT_URL`变量。
 
-2. **邮箱推送**：
+2. **邮箱推送**：#本库不适用
 
    - 如果你希望通过邮箱进行推送，可以设置`EMAIL_CONFIG`环境变量，格式如下：
      ```json
