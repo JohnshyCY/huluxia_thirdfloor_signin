@@ -105,11 +105,11 @@ class HuluxiaSignin:
         return login_res.json()
 
     # iOS 端登录
-    def ios_login(self, email, password):
+    def ios_login(self, phone, password):
         """
         iOS 端登录
 
-        :param email: 邮箱
+        :param phone: 手机号
         :param password: 密码
         :return: 登录结果
         """
@@ -128,28 +128,27 @@ class HuluxiaSignin:
             "code": "",
             "device_code": device_code,
             "device_model": "iPhone14%2C3",
-            "email": email,
+            "phone": phone,
             "market_id": "floor_huluxia",
             "openid": "",
             "password": self.md5(password),
-            "phone": "",
             "platform": "1"
         }
         login_res = session.post(url=login_url, data=login_data, headers=headers)
         return login_res.json()
 
     # 登录后设置相关信息
-    def set_config(self, email, password):
+    def set_config(self, phone, password):
         """
 
-        :param email: 邮箱
+        :param phone: 手机号
         :param password: 密码
         :return: 返回登录后生成的key值
         """
-        data = self.ios_login(email, password)
+        data = self.ios_login(phone, password)
         status = data['status']
         if status == 0:
-            self.notifier.send("邮箱或密码错误!")
+            self.notifier.send("手机号或密码错误!")
         else:
             self._key = data['_key']
             self.userid = data['user']['userID']
@@ -209,16 +208,16 @@ class HuluxiaSignin:
         return c
 
     # 签到
-    def huluxia_signin(self, email, password):
+    def huluxia_signin(self, phone, password):
         """
         葫芦侠三楼签到
     
-        :param email: 邮箱
+        :param phone: 手机号
         :param password: 密码
         :return: 签到结果
         """
         # 初始化通知信息
-        self.set_config(email, password)
+        self.set_config(phone, password)
         info = self.user_info()
         logger.info(f'正在为{info[0]}签到\n等级：Lv.{info[1]}\n经验值：{info[2]}/{info[3]}')
     
