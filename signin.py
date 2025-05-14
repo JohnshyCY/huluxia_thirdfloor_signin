@@ -77,33 +77,7 @@ class HuluxiaSignin:
                 raise ValueError("缺少邮箱配置")
         self.notifier = get_notifier(notifier_type, config)
 
-    # 手机号密码登录（原 Android 端）
-    def psd_login(self, account, password):
-        """
-        手机号密码登录
-
-        :param account: 手机号
-        :param password: 密码
-        :return: 登录结果
-        """
-        login_url = 'http://floor.huluxia.com/account/login/ANDROID/4.0?' \
-                    'platform=' + platform + \
-                    '&gkey=' + gkey + \
-                    '&app_version=' + app_version + \
-                    '&versioncode=' + versioncode + \
-                    '&market_id=' + market_id + \
-                    '&_key=&device_code=' + device_code + \
-                    '&phone_brand_type=' + phone_brand_type
-        login_data = {
-            'account': account,
-            'password': self.md5(password),
-            'login_type': 2
-        }
-        # print(login_data)
-        login_res = session.post(url=login_url, data=login_data, headers=headers)
-        # print("账号登录信息：", login_res.content)
-        return login_res.json()
-
+    
     # iOS 端登录
     def ios_login(self, phone, password):
         """
