@@ -6,7 +6,8 @@ import time
 import requests
 from logger import logger
 from notifier import get_notifier
-from datetime import datetime
+from datetime import timezone
+from datetime import datetime, timedelta  # 修改：添加timedelta
 
 # 随机配置
 phone_brand_type_list = list(["MI", "Huawei", "UN", "OPPO", "VO"])  # 随机设备厂商
@@ -50,13 +51,12 @@ class HuluxiaSignin:
         self.userid = ''
         self.signin_continue_days = ''
 
-
         # 初始化通知器类型
-        notifier_type = os.getenv("NOTIFIER_TYPE", "none")  # 可选：wechat(企业微信机器人）、email(邮箱推送)、none(不发送通知)
+        notifier_type = os.getenv("NOTIFIER_TYPE", "none")
         config = {
-            "webhook_url": os.getenv("WECHAT_ROBOT_URL"),  # 企业微信机器人 Webhook 地址
-            "smtp_server": "smtp.qq.com",  # SMTP 服务器地址 默认QQ邮箱
-            "port": 465  # SMTP 端口号
+            "webhook_url": os.getenv("WECHAT_ROBOT_URL"),
+            "smtp_server": "smtp.qq.com",
+            "port": 465
         }
         if notifier_type == "email":
             # 从环境变量获取邮箱配置
@@ -78,39 +78,15 @@ class HuluxiaSignin:
                 raise ValueError("缺少邮箱配置")
         self.notifier = get_notifier(notifier_type, config)
 
-    # 手机号密码登录（原 Android 端）
-    def psd_login(self, account, password):
-        """
-        手机号密码登录
 
-        :param account: 手机号
-        :param password: 密码
-        :return: 登录结果
-        """
-        login_url = 'http://floor.huluxia.com/account/login/ANDROID/4.0?' \
-                    'platform=' + platform + \
-                    '&gkey=' + gkey + \
-                    '&app_version=' + app_version + \
-                    '&versioncode=' + versioncode + \
-                    '&market_id=' + market_id + \
-                    '&_key=&device_code=' + device_code + \
-                    '&phone_brand_type=' + phone_brand_type
-        login_data = {
-            'account': account,
-            'password': self.md5(password),
-            'login_type': 2
-        }
-        # print(login_data)
-        login_res = session.post(url=login_url, data=login_data, headers=headers)
-        # print("账号登录信息：", login_res.content)
-        return login_res.json()
 
     # iOS 端登录
-    def ios_login(self, email, password):
+    # iOS 端登录（修正email字段为手机号）
+    def ios_login(self, phone, password):
         """
-        iOS 端登录
+        iOS 端手机号登录（兼容接口email字段要求）
 
-        :param email: 邮箱
+        :param phone: 手机号（作为登录账号传入email字段）
         :param password: 密码
         :return: 登录结果
         """
@@ -129,28 +105,30 @@ class HuluxiaSignin:
             "code": "",
             "device_code": device_code,
             "device_model": "iPhone14%2C3",
-            "email": email,
+            "phone": "",  # 保持phone字段为空（根据接口要求）
             "market_id": "floor_huluxia",
             "openid": "",
             "password": self.md5(password),
-            "phone": "",
+            "email": phone,  # 关键修改：将手机号传入email字段
             "platform": "1"
         }
         login_res = session.post(url=login_url, data=login_data, headers=headers)
+        #print("登录结果：", login_res.json())  # 调试用，测试通过后可删除
         return login_res.json()
 
-    # 登录后设置相关信息
-    def set_config(self, email, password):
+    # 登录后设置相关信息（改为手机号登录）
+    def set_config(self, phone, password):  # 修改参数名：email -> phone
         """
+        手机号登录后设置相关信息
 
-        :param email: 邮箱
+        :param phone: 手机号
         :param password: 密码
         :return: 返回登录后生成的key值
         """
-        data = self.ios_login(email, password)
+        data = self.ios_login(phone, password)  # 传递手机号参数
         status = data['status']
         if status == 0:
-            self.notifier.send("邮箱或密码错误!")
+            self.notifier.send("手机号或密码错误!")  # 更新错误提示
         else:
             self._key = data['_key']
             self.userid = data['user']['userID']
@@ -209,24 +187,26 @@ class HuluxiaSignin:
         c = self.md5(result)  # sign的构成：板块id + 时间戳 + 固定字符
         return c
 
-    # 签到
-    def huluxia_signin(self, email, password):
+    # 签到（改为手机号登录）
+    def huluxia_signin(self, phone, password):  # 修改参数名：email -> phone
         """
-        葫芦侠三楼签到
+        葫芦侠三楼签到（手机号登录版）
 
-        :param email: 邮箱
+        :param phone: 手机号
         :param password: 密码
         :return: 签到结果
         """
-        # 发送开始签到的通知
-        now = datetime.now()
-        start_msg = f"📢 葫芦侠三楼开始签到啦！"
+        # 发送开始签到的通知（修改时间获取逻辑）
+        # 获取UTC时间并加8小时得到北京时间（自动处理日期进位，无需手动减24）
+        utc_now = datetime.now(timezone.utc)
+        beijing_time = utc_now + timedelta(hours=8)  # 加8小时
+        start_msg = f"📢 葫芦侠三楼开始签到啦！开始时间（北京时间）：{beijing_time.strftime('%Y-%m-%d %H:%M:%S')}"
         notifier_type = os.getenv("NOTIFIER_TYPE")
         if notifier_type == "wechat":
             self.notifier.send(start_msg)
 
         # 初始化通知信息
-        self.set_config(email, password)
+        self.set_config(phone, password)  # 传递手机号参数
         info = self.user_info()
         logger.info(f'正在为{info[0]}签到\n等级：Lv.{info[1]}\n经验值：{info[2]}/{info[3]}')
 

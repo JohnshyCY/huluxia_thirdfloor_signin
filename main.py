@@ -2,6 +2,10 @@ import time
 from signin import HuluxiaSignin
 import os
 from logger import logger
+from dotenv import load_dotenv  # 新增：导入 dotenv 库
+
+# 新增：加载 .env 文件（必须在读取环境变量前执行）
+load_dotenv()
 
 # 检查环境变量
 accounts_str = os.getenv('ACCOUNTS')
