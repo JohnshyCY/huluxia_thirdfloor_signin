@@ -220,8 +220,7 @@ class HuluxiaSignin:
         """
         # 发送开始签到的通知
         now = datetime.now()
-        start_time = now.strftime("%Y-%m-%d+8 %H:%M:%S")
-        start_msg = f"📢 葫芦侠三楼开始签到啦！当前时间：{start_time}"
+        start_msg = f"📢 葫芦侠三楼开始签到啦！"
         notifier_type = os.getenv("NOTIFIER_TYPE")
         if notifier_type == "wechat":
             self.notifier.send(start_msg)
