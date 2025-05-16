@@ -6,6 +6,7 @@ import time
 import requests
 from logger import logger
 from notifier import get_notifier
+from datetime import datetime
 
 # 随机配置
 phone_brand_type_list = list(["MI", "Huawei", "UN", "OPPO", "VO"])  # 随机设备厂商
@@ -212,25 +213,32 @@ class HuluxiaSignin:
     def huluxia_signin(self, email, password):
         """
         葫芦侠三楼签到
-    
+
         :param email: 邮箱
         :param password: 密码
         :return: 签到结果
         """
+        # 发送开始签到的通知
+        now = datetime.now()
+        start_time = now.strftime("%Y-%m-%d %H:%M:%S")
+        start_msg = f"📢 葫芦侠三楼开始签到啦！当前时间：{start_time}"
+        notifier_type = os.getenv("NOTIFIER_TYPE")
+        if notifier_type == "wechat":
+            self.notifier.send(start_msg)
+
         # 初始化通知信息
         self.set_config(email, password)
         info = self.user_info()
         logger.info(f'正在为{info[0]}签到\n等级：Lv.{info[1]}\n经验值：{info[2]}/{info[3]}')
-    
+
         # 获取通知类型
-        notifier_type = os.getenv("NOTIFIER_TYPE")
         print("通知类型：", notifier_type)
-    
+
         total_exp = 0  # 记录总共获取的经验值
         success_count = 0  # 成功签到的板块数
         fail_count = 0  # 失败签到的板块数
         failed_plates = []  # 失败的板块名称
-    
+
         # 循环签到每个版块
         for ct in cat_id_dict.keys():
             self.cat_id = ct
@@ -249,14 +257,14 @@ class HuluxiaSignin:
                 failed_plates.append(cat_id_dict[self.cat_id])
                 logger.error(f"签到过程中出现错误：{e}")
                 continue
-    
+
             # 处理签到结果
             if signin_res.get('status') == 0:
                 fail_count += 1
                 failed_plates.append(cat_id_dict[self.cat_id])
                 logger.warning(f'【{cat_id_dict[self.cat_id]}】签到失败，请手动签到。')
                 continue
-    
+
             # 签到成功，记录经验值
             signin_exp = signin_res.get('experienceVal', 0)
             self.signin_continue_days = signin_res.get('continueDays', 0)
@@ -264,7 +272,7 @@ class HuluxiaSignin:
             total_exp += signin_exp
             logger.info(f'【{cat_id_dict[self.cat_id]}】签到成功，经验值 +{signin_exp}')
             time.sleep(3)
-    
+
         # 汇总签到结果
         summary_msg = [
             f'用户：{info[0]}',
@@ -273,10 +281,10 @@ class HuluxiaSignin:
             f'失败：{fail_count}',
             f'共获得：{total_exp} 经验值'
         ]
-        
+
         if failed_plates:
             summary_msg.append(f'失败板块：{", ".join(failed_plates)}')
-    
+
         # 完成签到后的用户信息
         final_info = self.user_info()
         final_msg = [
@@ -285,7 +293,7 @@ class HuluxiaSignin:
             f'已连续签到：{self.signin_continue_days} 天',
             f'预计还需签到：{(int(final_info[3]) - int(final_info[2])) // total_exp + 1 if total_exp else "未知"} 天'
         ]
-    
+
         # 合并所有需要推送的消息
         notification_msg = "\n\n".join([
             "📜 葫芦侠三楼签到汇总",
@@ -296,7 +304,7 @@ class HuluxiaSignin:
             "----------------",
             "🎉 签到任务已完成！"
         ])
-    
+
         # 发送通知
         if notifier_type in ["wechat", "email"]:
             self.notifier.send(notification_msg)
