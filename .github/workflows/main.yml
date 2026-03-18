@@ -1,28 +1,33 @@
 name: huluxia_signin
 on:
-  schedule:    # 定时触发
-    - cron: '0 16 * * *'  # 24点（UTC时间，对应北京时间次日0点）
-  workflow_dispatch:  # 支持手动触发
+  schedule:
+    - cron: '0 16 * * *'
+  workflow_dispatch:
+
+# 强制启用 Node.js 24，彻底消除弃用警告
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4  # 升级到v4，支持Node.js 24
-      - name: '初始化python环境'
-        uses: actions/setup-python@v5  # 升级到v5，支持Node.js 24
+        uses: actions/checkout@v4
+
+      - name: 初始化Python环境
+        uses: actions/setup-python@v5
         with:
           python-version: 3.10.11
-      - name: '安装依赖'
+
+      - name: 安装依赖
         run: |
           pip install --upgrade pip
           pip install -r ./requirements.txt
-      - name: '开始运行'
-        id: signin-outputs
+
+      - name: 开始签到运行
         env:
-          # 不需要的推送形式可以直接注释，反之你需要取消注释
           NOTIFIER_TYPE: ${{ secrets.NOTIFIER_TYPE }}
-          #EMAIL_CONFIG: ${{ secrets.EMAIL_CONFIG }}
           WECHAT_ROBOT_URL: ${{ secrets.WECHAT_ROBOT_URL }}
           ACCOUNTS: ${{ secrets.ACCOUNTS }}
         run: |
