@@ -1,7 +1,7 @@
 # 葫芦侠三楼每日自动签到 🚀
 
-> **💯33个版块精准签到**
-> 
+> **版块精准签到**
+> http://floor.huluxia.com/category/list/ANDROID/2.0，
 > **🗂️多账号支持**
 >
 > 
@@ -19,7 +19,7 @@
    - 点击右上角`Fork`按钮，将本项目Fork到你的仓库。
 
 2. **设置Github Secrets**：
-   - 进入你的仓库，点击`Settings`。
+   - 进入你的仓库，点击`设置`。
    - 选择`Secrets and variables` -> `Actions`。
    - 点击`New repository secret`，添加名为`NOTIFIER_TYPE`的Secret，值既为可选的推送方式：`wechat`(企业微信群机器人推送)、
    - 点击`New repository secret`，添加名为`ACCOUNTS`的Secret，值为你的账号信息，格式如下：<br/>
