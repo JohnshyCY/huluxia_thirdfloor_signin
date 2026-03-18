@@ -4,7 +4,6 @@ on:
     - cron: '0 16 * * *'
   workflow_dispatch:
 
-# 强制启用 Node.js 24，彻底消除弃用警告
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -25,7 +24,7 @@ jobs:
           pip install --upgrade pip
           pip install -r ./requirements.txt
 
-      - name: 开始签到运行
+      - name: 开始签到
         env:
           NOTIFIER_TYPE: ${{ secrets.NOTIFIER_TYPE }}
           WECHAT_ROBOT_URL: ${{ secrets.WECHAT_ROBOT_URL }}
